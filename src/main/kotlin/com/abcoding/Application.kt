@@ -2,14 +2,21 @@ package com.abcoding
 
 import com.abcoding.plugins.*
 import io.ktor.server.application.*
-import org.koin.ktor.ext.Koin
-import java.nio.file.Paths
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
+import org.koin.ktor.ext.inject
 
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
-
 }
+
+val mainModule  = module {
+    single {
+        "hello world"
+    }
+}
+
 @Suppress("unused")
 fun Application.module() {
     configureSockets()
@@ -18,6 +25,10 @@ fun Application.module() {
     configureHTTP()
     configureSecurity()
     configureRouting()
-    // Install Koin
+    startKoin {
+        modules(mainModule)
+    }
+    val  helloWorld: String by inject()
+    println(helloWorld)
 
 }
