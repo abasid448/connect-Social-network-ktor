@@ -22,6 +22,7 @@ fun Route.userRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
+
             val userExist = userController.getUserByEmail(reqest.email) != null
             if (userExist) {
                 call.respond(
