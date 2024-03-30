@@ -1,13 +1,17 @@
 package com.abcoding.plugins
 
-import com.abcoding.routes.userRoutes
+
+import com.abcoding.data.repository.user.UserRepository
+import com.abcoding.routes.createUser
 import io.ktor.server.application.*
-import io.ktor.server.http.content.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
+
+
 
 fun Application.configureRouting() {
+    val userRepository: UserRepository by inject()
     routing {
-        userRoutes()
+        createUser(userRepository)  // Assuming createUser handles user creation
     }
 }

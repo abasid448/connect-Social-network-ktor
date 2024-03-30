@@ -1,6 +1,6 @@
 package com.abcoding.routes
 
-import com.abcoding.controller.UserController
+import com.abcoding.data.repository.user.UserRepository
 import com.abcoding.data.models.User
 import com.abcoding.data.requests.CreateAccountRequest
 import com.abcoding.data.responses.BasicApiResponse
@@ -11,19 +11,23 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.koin.ktor.ext.inject
 
 
-fun Route.userRoutes() {
-    val userController: UserController by inject()
+fun Route.createUser(userRepository: UserRepository) {
     route("/api/user/create") {
         post {
-            val reqest = call.receiveOrNull<CreateAccountRequest>() ?: kotlin.run {
+
+//            val reqest = call.receiveOrNull<CreateAccountRequest>() ?: kotlin.run {
+//                call.respond(HttpStatusCode.BadRequest)
+//                return@post
+//            }
+
+            val reqest = call.receiveNullable<CreateAccountRequest>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
 
-            val userExist = userController.getUserByEmail(reqest.email) != null
+            val userExist = userRepository.getUserByEmail(reqest.email) != null
             if (userExist) {
                 call.respond(
                     BasicApiResponse(
@@ -42,7 +46,7 @@ fun Route.userRoutes() {
                 )
                 return@post
             }
-            userController.createUser(
+            userRepository.createUser(
                 User(
                     email = reqest.email,
                     username = reqest.username,

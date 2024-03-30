@@ -20,12 +20,14 @@ application {
 
 }
 
+
 repositories {
     mavenCentral()
 }
 
+
 dependencies {
-    implementation("io.ktor:ktor-server-core-jvm")
+    implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-websockets-jvm")
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-serialization-gson-jvm")
@@ -47,9 +49,27 @@ dependencies {
     implementation("org.litote.kmongo:kmongo-coroutine:$kmongo_version")
     // Koin core features
     implementation("io.insert-koin:koin-core:$koin_version")
+    testImplementation("io.insert-koin:koin-test:$koin_version")
     implementation("io.insert-koin:koin-ktor:$koin_version")
     implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
     // Koin
     testImplementation("io.insert-koin:koin-test:$koin_version")
+
+    // Test dependencies
+
+    implementation("io.ktor:ktor-server-host-common:$ktor_version")
+
+    // Gson
+    testImplementation("com.google.code.gson:gson:2.8.8")
+    // Koin
+    testImplementation("io.insert-koin:koin-test")
+    // Ktor Test
+    testImplementation("io.ktor:ktor-server-tests")
+    // Kotlin Test
+    testImplementation ("org.jetbrains.kotlin:kotlin-test")
+    // Truth
+    testImplementation ("com.google.truth:truth:1.4.2")
+
+
 
 }

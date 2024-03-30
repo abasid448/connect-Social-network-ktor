@@ -1,12 +1,12 @@
-package com.abcoding.controller
+package com.abcoding.data.repository.user
 
 import com.abcoding.data.models.User
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
 
-class UserControlIerImpl(
-     db:CoroutineDatabase
-) :UserController{
+class UserRepositoryImpl(
+    db: CoroutineDatabase
+) : UserRepository {
 
     private val users = db.getCollection<User>()
 
@@ -20,5 +20,10 @@ class UserControlIerImpl(
 
     override suspend fun getUserByEmail(email: String): User? {
         return users.findOne(User::email eq email)
+    }
+
+    override suspend fun doesPasswordForUserMatch(email: String, enteredPassword: String): Boolean {
+       val user = getUserByEmail(email)
+        return user?.password == enteredPassword
     }
 }
