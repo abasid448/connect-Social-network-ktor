@@ -11,14 +11,17 @@ fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
 }
 fun Application.module() {
+
     configureSecurity()
     configureSockets()
     configureRouting()
-
     configureHTTP()
     configureMonitoring()
     configureSerialization()
     startKoin {
         modules(mainModule)
     }
+
+
+
 }

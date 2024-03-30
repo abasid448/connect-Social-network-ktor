@@ -1,7 +1,7 @@
 package com.abcoding.di
 
-import com.abcoding.data.repository.user.UserRepositoryImpl
 import com.abcoding.data.repository.user.UserRepository
+import com.abcoding.data.repository.user.UserRepositoryImpl
 import com.abcoding.util.Constants
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine

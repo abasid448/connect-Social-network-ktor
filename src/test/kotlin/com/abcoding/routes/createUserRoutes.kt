@@ -1,11 +1,11 @@
 package com.abcoding.routes
 
 import com.abcoding.data.models.User
+import com.abcoding.data.repository.user.FakeUserRepository
 import com.abcoding.data.requests.CreateAccountRequest
 import com.abcoding.data.responses.BasicApiResponse
 import com.abcoding.di.testModule
 import com.abcoding.plugins.configureSerialization
-import com.abcoding.repository.user.FakeUserRepository
 import com.abcoding.util.ApiResponseMessages
 import com.google.common.truth.Truth.assertThat
 import com.google.gson.Gson
@@ -18,8 +18,10 @@ import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
 import org.koin.test.KoinTest
 import org.koin.test.inject
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 
 
@@ -36,8 +38,13 @@ internal class createUserRoutes : KoinTest {
         }
     }
 
+    @AfterTest
+    fun tearDown(){
+        stopKoin()
+    }
+
     @Test
-    fun ` `() {
+    fun `Create user, no body attached, responds with BadRequest`() {
 
         testApplication {
             application {

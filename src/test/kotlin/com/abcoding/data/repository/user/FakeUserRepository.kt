@@ -1,8 +1,6 @@
-package com.abcoding.repository.user
+package com.abcoding.data.repository.user
 
 import com.abcoding.data.models.User
-import com.abcoding.data.repository.user.UserRepository
-
 
 class FakeUserRepository : UserRepository {
 
@@ -21,7 +19,7 @@ class FakeUserRepository : UserRepository {
     }
 
     override suspend fun doesPasswordForUserMatch(email: String, enteredPassword: String): Boolean {
-      val user =getUserByEmail(email)
+        val user = getUserByEmail(email)
         return user?.password == enteredPassword
     }
 }
