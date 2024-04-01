@@ -1,5 +1,7 @@
 package com.abcoding.di
 
+import com.abcoding.data.repository.follow.FollowRepository
+import com.abcoding.data.repository.follow.FollowRepositoryImpl
 import com.abcoding.data.repository.user.UserRepository
 import com.abcoding.data.repository.user.UserRepositoryImpl
 import com.abcoding.util.Constants
@@ -14,5 +16,8 @@ val mainModule = module {
     }
     single<UserRepository> {
         UserRepositoryImpl(get())
+    }
+    single <FollowRepository>{
+        FollowRepositoryImpl(get())
     }
 }
