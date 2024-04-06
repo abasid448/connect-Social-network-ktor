@@ -15,14 +15,15 @@ class FollowRepositoryImpl(
 
     override suspend fun followUserIfExists(
         followingUserId: String,
-        followedUserId: String): Boolean {
+        followedUserId: String
+    ): Boolean {
         val doesFollowingUserExist = users.findOneById(followingUserId) != null
-        val doesFollowedUserExist  = users.findOneById(followedUserId) != null
-        if (!doesFollowingUserExist || !doesFollowedUserExist){
+        val doesFollowedUserExist = users.findOneById(followedUserId) != null
+        if(!doesFollowingUserExist || !doesFollowedUserExist) {
             return false
         }
         following.insertOne(
-            Following(followingUserId,followedUserId)
+            Following(followingUserId, followedUserId)
         )
         return true
     }
@@ -30,7 +31,7 @@ class FollowRepositoryImpl(
     override suspend fun unfollowUserIfExists(followingUserId: String, followedUserId: String): Boolean {
         val deleteResult = following.deleteOne(
             and(
-                Following::followingUserId eq  followingUserId,
+                Following::followingUserId eq followingUserId,
                 Following::followedUserId eq followedUserId,
             )
         )

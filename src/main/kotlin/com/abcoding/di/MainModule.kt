@@ -6,6 +6,7 @@ import com.abcoding.data.repository.post.PostRepository
 import com.abcoding.data.repository.post.PostRepositoryImpl
 import com.abcoding.data.repository.user.UserRepository
 import com.abcoding.data.repository.user.UserRepositoryImpl
+import com.abcoding.service.UserService
 import com.abcoding.util.Constants
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
@@ -19,10 +20,8 @@ val mainModule = module {
     single<UserRepository> {
         UserRepositoryImpl(get())
     }
-    single <FollowRepository>{
+    single<FollowRepository> {
         FollowRepositoryImpl(get())
     }
-    single <PostRepository>{
-        PostRepositoryImpl(get())
-    }
+    single { UserService(get()) }
 }

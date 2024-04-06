@@ -6,6 +6,7 @@ import com.abcoding.data.requests.CreateAccountRequest
 import com.abcoding.data.responses.BasicApiResponse
 import com.abcoding.di.testModule
 import com.abcoding.plugins.configureSerialization
+import com.abcoding.service.UserService
 import com.abcoding.util.ApiResponseMessages
 import com.google.common.truth.Truth.assertThat
 import com.google.gson.Gson
@@ -49,7 +50,7 @@ internal class createUserRoutes : KoinTest {
         testApplication {
             application {
                 install(Routing){
-                    createUser(userRepository)
+                    createUserRoute(userService = UserService(userRepository))
                 }
             }
             val request= client.post("/api/user/create")
@@ -64,7 +65,6 @@ internal class createUserRoutes : KoinTest {
             username = "test",
             password = "test",
             profileImageUrl = "",
-            bannerUrl = "",
             bio = "",
             gitHubUrl = null,
             instagramUrl = null,
@@ -75,7 +75,7 @@ internal class createUserRoutes : KoinTest {
             application {
                 configureSerialization()
                 install(Routing) {
-                    createUser(userRepository)
+                    createUserRoute(userService = UserService(userRepository))
                 }
             }
             val request = client.post("/api/user/create")
@@ -101,7 +101,7 @@ internal class createUserRoutes : KoinTest {
             application {
                 configureSerialization()
                 install(Routing) {
-                    createUser(userRepository)
+                    createUserRoute(userService = UserService(userRepository))
                 }
             }
             val request = client.post("/api/user/create")
@@ -127,7 +127,7 @@ internal class createUserRoutes : KoinTest {
         testApplication {
             application {
                 install(Routing){
-                    createUser(userRepository  )
+                    createUserRoute(userService = UserService(userRepository))
                 }
             }
             val request = client.post(

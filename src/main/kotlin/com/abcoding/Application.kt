@@ -10,6 +10,7 @@ import org.koin.core.context.startKoin
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
 }
+@Suppress("unused")
 fun Application.module() {
 
     configureSecurity()
@@ -21,7 +22,4 @@ fun Application.module() {
     startKoin {
         modules(mainModule)
     }
-
-
-
 }
