@@ -50,7 +50,7 @@ internal class createUserRoutes : KoinTest {
         testApplication {
             application {
                 install(Routing){
-                    createUserRoute(userService = UserService(userRepository))
+                    createUser(userService = UserService(userRepository))
                 }
             }
             val request= client.post("/api/user/create")
@@ -75,7 +75,7 @@ internal class createUserRoutes : KoinTest {
             application {
                 configureSerialization()
                 install(Routing) {
-                    createUserRoute(userService = UserService(userRepository))
+                    createUser(userService = UserService(userRepository))
                 }
             }
             val request = client.post("/api/user/create")
@@ -101,7 +101,7 @@ internal class createUserRoutes : KoinTest {
             application {
                 configureSerialization()
                 install(Routing) {
-                    createUserRoute(userService = UserService(userRepository))
+                    createUser(userService = UserService(userRepository))
                 }
             }
             val request = client.post("/api/user/create")
@@ -127,7 +127,7 @@ internal class createUserRoutes : KoinTest {
         testApplication {
             application {
                 install(Routing){
-                    createUserRoute(userService = UserService(userRepository))
+                    createUser(userService = UserService(userRepository))
                 }
             }
             val request = client.post(

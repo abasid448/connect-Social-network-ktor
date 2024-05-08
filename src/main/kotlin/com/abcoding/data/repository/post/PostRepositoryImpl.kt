@@ -28,7 +28,7 @@ class PostRepositoryImpl(
         posts.deleteOneById(postId)
     }
 
-    override suspend fun getPostByFollows(
+    override suspend fun getPostsByFollows(
         userId: String,
         page: Int,
         pageSize: Int
@@ -43,5 +43,9 @@ class PostRepositoryImpl(
             .limit(pageSize)
             .descendingSort(Post::timestamp)
             .toList()
+    }
+
+    override suspend fun getPost(postId: String): Post? {
+        return posts.findOneById(postId)
     }
 }

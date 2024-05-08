@@ -8,9 +8,11 @@ interface PostRepository {
 
     suspend fun deletePost(postId: String)
 
-    suspend fun getPostByFollows(
+    suspend fun getPostsByFollows(
         userId: String,
         page: Int = 0 ,
         pageSize: Int = Constants.DEFAULT_PAGE_SIZE
     ): List<Post>
+
+    suspend fun getPost(postId: String): Post?
 }
