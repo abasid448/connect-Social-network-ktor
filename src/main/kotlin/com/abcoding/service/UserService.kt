@@ -48,6 +48,9 @@ class UserService(
 
     sealed class ValidationEvent {
         object ErrorFieldEmpty : ValidationEvent()
+
+        object ErrorCommentTooLong : ValidationEvent()
+
         object Success : ValidationEvent()
     }
 }

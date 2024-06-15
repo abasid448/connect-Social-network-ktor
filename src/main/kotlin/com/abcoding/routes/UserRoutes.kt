@@ -51,6 +51,8 @@ fun Route.createUser(userService: UserService) {
                         )
                     )
                 }
+// doesnt needed
+                else -> {}
             }
         }
     }
