@@ -6,7 +6,7 @@ import com.abcoding.data.requests.CreateAccountRequest
 import com.abcoding.data.requests.LoginRequest
 
 class UserService(
-    private val repository: UserRepository
+        private val repository: UserRepository
 ) {
 
     suspend fun doesUserWithEmailExist(email: String): Boolean {
@@ -17,25 +17,33 @@ class UserService(
         return repository.doesEmailBelongToUserId(email, userId)
     }
 
+    suspend fun getUserByEmail(email: String): User? {
+        return repository.getUserByEmail(email)
+    }
+
+    fun isValidPassword(enteredPassword: String, actualPassword: String): Boolean {
+        return enteredPassword == actualPassword
+    }
+
     suspend fun doesPasswordMatchForUser(request: LoginRequest): Boolean {
         return repository.doesPasswordForUserMatch(
-            email = request.email,
-            enteredPassword = request.password
+                email = request.email,
+                enteredPassword = request.password
         )
     }
 
     suspend fun createUser(request: CreateAccountRequest) {
         repository.createUser(
-            User(
-                email = request.email,
-                username = request.username,
-                password = request.password,
-                profileImageUrl = "",
-                bio = "",
-                gitHubUrl = null,
-                instagramUrl = null,
-                linkedInUrl = null
-            )
+                User(
+                        email = request.email,
+                        username = request.username,
+                        password = request.password,
+                        profileImageUrl = "",
+                        bio = "",
+                        gitHubUrl = null,
+                        instagramUrl = null,
+                        linkedInUrl = null
+                )
         )
     }
 
@@ -48,9 +56,6 @@ class UserService(
 
     sealed class ValidationEvent {
         object ErrorFieldEmpty : ValidationEvent()
-
-        object ErrorCommentTooLong : ValidationEvent()
-
         object Success : ValidationEvent()
     }
 }

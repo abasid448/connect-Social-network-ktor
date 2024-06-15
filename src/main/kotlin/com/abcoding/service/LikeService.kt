@@ -3,7 +3,7 @@ package com.abcoding.service
 import com.abcoding.data.repository.likes.LikeRepository
 
 class LikeService(
-    private val repository: LikeRepository
+        private val repository: LikeRepository
 ) {
 
     suspend fun likeParent(userId: String, parentId: String): Boolean {

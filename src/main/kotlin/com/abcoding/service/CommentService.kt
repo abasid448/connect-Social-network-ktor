@@ -9,22 +9,21 @@ class CommentService(
         private val repository: CommentRepository
 ) {
 
-    suspend fun createComment(createCommentRequest: CreateCommentRequest): ValidationEvent {
+    suspend fun createComment(createCommentRequest: CreateCommentRequest, userId: String): ValidationEvent {
         createCommentRequest.apply {
-            if (comment.isBlank() || userId.isBlank() || postId.isBlank()) {
+            if(comment.isBlank() || postId.isBlank()) {
                 return ValidationEvent.ErrorFieldEmpty
             }
-            if (comment.length > Constants.MAX_COMMENT_LENGTH) {
+            if(comment.length > Constants.MAX_COMMENT_LENGTH) {
                 return ValidationEvent.ErrorCommentTooLong
             }
         }
-
         repository.createComment(
                 Comment(
                         comment = createCommentRequest.comment,
-                        userId = createCommentRequest.userId,
+                        userId = userId,
                         postId = createCommentRequest.postId,
-                        timeStamp = System.currentTimeMillis()
+                        timestamp = System.currentTimeMillis()
                 )
         )
         return ValidationEvent.Success
@@ -38,11 +37,13 @@ class CommentService(
         return repository.getCommentsForPost(postId)
     }
 
+    suspend fun getCommentById(commentId: String): Comment? {
+        return repository.getComment(commentId)
+    }
+
     sealed class ValidationEvent {
         object ErrorFieldEmpty : ValidationEvent()
-
         object ErrorCommentTooLong : ValidationEvent()
-
         object Success : ValidationEvent()
     }
 }

@@ -19,81 +19,89 @@ import java.util.*
 
 
 fun Route.createUser(userService: UserService) {
-    route("/api/user/create") {
-        post {
-            val request = call.receiveNullable<CreateAccountRequest>() ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@post
-            }
-            if (userService.doesUserWithEmailExist(request.email)) {
-                call.respond(
+    post("/api/user/create") {
+        val request = call.receiveNullable<CreateAccountRequest>() ?: kotlin.run {
+            call.respond(HttpStatusCode.BadRequest)
+            return@post
+        }
+        if (userService.doesUserWithEmailExist(request.email)) {
+            call.respond(
                     BasicApiResponse(
-                        successful = false,
-                        message = USER_ALREADY_EXISTS
-                    )
-                )
-                return@post
-            }
-            when (userService.validateCreateAccountRequest(request)) {
-                is UserService.ValidationEvent.ErrorFieldEmpty -> {
-                    call.respond(
-                        BasicApiResponse(
                             successful = false,
-                            message = FIELDS_BLANK
-                        )
+                            message = USER_ALREADY_EXISTS
                     )
-                }
-
-                is UserService.ValidationEvent.Success -> {
-                    call.respond(
+            )
+            return@post
+        }
+        when(userService.validateCreateAccountRequest(request)) {
+            is UserService.ValidationEvent.ErrorFieldEmpty -> {
+                call.respond(
                         BasicApiResponse(
-                            successful = true
+                                successful = false,
+                                message = FIELDS_BLANK
                         )
-                    )
-                }
-// doesnt needed
-                else -> {}
+                )
+            }
+            is UserService.ValidationEvent.Success -> {
+                userService.createUser(request)
+                call.respond(
+                        BasicApiResponse(successful = true)
+                )
             }
         }
     }
 }
 
 fun Route.loginUser(
-    userService: UserService,
-    jwtIssuer: String,
-    jwtAudience: String,
-    jwtSecret: String
+        userService: UserService,
+        jwtIssuer: String,
+        jwtAudience: String,
+        jwtSecret: String
 ) {
     post("/api/user/login") {
-//
-        val request = call.receiveNullable<LoginRequest>() ?: kotlin.run {
+        val request = call.receiveOrNull<LoginRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
+
         if (request.email.isBlank() || request.password.isBlank()) {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
-        val isCorrectPassword = userService.doesPasswordMatchForUser(request)
-        if (isCorrectPassword) {
+
+        val user = userService.getUserByEmail(request.email) ?: kotlin.run {
+            call.respond(
+                    HttpStatusCode.OK,
+                    BasicApiResponse(
+                            successful = false,
+                            message = INVALID_CREDENTIALS
+                    )
+            )
+            return@post
+        }
+        val isCorrectPassword = userService.isValidPassword(
+                enteredPassword = request.password,
+                actualPassword = user.password
+        )
+        if(isCorrectPassword) {
             val expiresIn = 1000L * 60L * 60L * 24L * 365L
             val token = JWT.create()
-                .withClaim("email",request.email)
-                .withIssuer(jwtIssuer)
-                .withExpiresAt(Date(System.currentTimeMillis() + expiresIn))
-                .withAudience(jwtAudience)
-                .sign(Algorithm.HMAC256(jwtSecret))
+                    .withClaim("userId", user.id)
+                    .withIssuer(jwtIssuer)
+                    .withExpiresAt(Date(System.currentTimeMillis() + expiresIn))
+                    .withAudience(jwtAudience)
+                    .sign(Algorithm.HMAC256(jwtSecret))
             call.respond(
-                HttpStatusCode.OK,
-                AuthResponse(token = token)
+                    HttpStatusCode.OK,
+                    AuthResponse(token = token)
             )
         } else {
             call.respond(
-                HttpStatusCode.OK,
-                BasicApiResponse(
-                    successful = false,
-                    message = INVALID_CREDENTIALS
-                )
+                    HttpStatusCode.OK,
+                    BasicApiResponse(
+                            successful = false,
+                            message = INVALID_CREDENTIALS
+                    )
             )
         }
     }
