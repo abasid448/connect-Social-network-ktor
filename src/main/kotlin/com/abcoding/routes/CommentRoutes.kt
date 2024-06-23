@@ -3,6 +3,7 @@ package com.abcoding.routes
 import com.abcoding.data.requests.CreateCommentRequest
 import com.abcoding.data.requests.DeleteCommentRequest
 import com.abcoding.data.responses.BasicApiResponse
+import com.abcoding.service.ActivityService
 import com.abcoding.service.CommentService
 import com.abcoding.service.LikeService
 import com.abcoding.service.UserService
@@ -17,6 +18,7 @@ import io.ktor.server.routing.*
 
 fun Route.createComment(
         commentService: CommentService,
+        activityService: ActivityService
 ) {
     authenticate {
         post("/api/comment/create") {
@@ -24,7 +26,8 @@ fun Route.createComment(
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            when(commentService.createComment(request, call.userId)) {
+            val userId = call.userId
+            when(commentService.createComment(request, userId)) {
                 is CommentService.ValidationEvent.ErrorFieldEmpty -> {
                     call.respond(
                             HttpStatusCode.OK,
@@ -44,6 +47,10 @@ fun Route.createComment(
                     )
                 }
                 is CommentService.ValidationEvent.Success -> {
+                    activityService.addCommentActivity(
+                            byUserId = userId,
+                            postId = request.postId,
+                    )
                     call.respond(
                             HttpStatusCode.OK,
                             BasicApiResponse(
@@ -57,9 +64,8 @@ fun Route.createComment(
 }
 
 fun Route.getCommentsForPost(
-        commentService: CommentService
+        commentService: CommentService,
 ) {
-
     authenticate {
         get("/api/comment/get") {
             val postId = call.parameters[QueryParams.PARAM_POST_ID] ?: kotlin.run {

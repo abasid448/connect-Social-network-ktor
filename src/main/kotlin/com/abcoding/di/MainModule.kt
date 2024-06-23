@@ -1,7 +1,13 @@
 package com.abcoding.di
 
+import com.abcoding.data.repository.activity.ActivityRepository
+import com.abcoding.data.repository.activity.ActivityRepositoryImpl
+import com.abcoding.data.repository.comment.CommentRepository
+import com.abcoding.data.repository.comment.CommentRepositoryImpl
 import com.abcoding.data.repository.follow.FollowRepository
 import com.abcoding.data.repository.follow.FollowRepositoryImpl
+import com.abcoding.data.repository.likes.LikeRepository
+import com.abcoding.data.repository.likes.LikeRepositoryImpl
 import com.abcoding.data.repository.post.PostRepository
 import com.abcoding.data.repository.post.PostRepositoryImpl
 import com.abcoding.data.repository.user.UserRepository
@@ -26,9 +32,21 @@ val mainModule = module {
     single <PostRepository>{
         PostRepositoryImpl(get())
     }
+    single<LikeRepository> {
+        LikeRepositoryImpl(get())
+    }
+    single<CommentRepository> {
+        CommentRepositoryImpl(get())
+    }
+    single<ActivityRepository> {
+        ActivityRepositoryImpl(get())
+    }
+
+
     single { UserService(get()) }
     single { FollowService(get()) }
     single { PostService(get()) }
     single { LikeService(get()) }
     single { CommentService(get()) }
+    single { ActivityService(get(), get(), get()) }
 }

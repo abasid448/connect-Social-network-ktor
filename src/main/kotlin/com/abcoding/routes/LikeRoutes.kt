@@ -2,6 +2,8 @@ package com.abcoding.routes
 
 import com.abcoding.data.requests.LikeUpdateRequest
 import com.abcoding.data.responses.BasicApiResponse
+import com.abcoding.data.util.ParentType
+import com.abcoding.service.ActivityService
 import com.abcoding.service.LikeService
 import com.abcoding.service.UserService
 import com.abcoding.util.ApiResponseMessages
@@ -14,23 +16,23 @@ import io.ktor.server.routing.*
 
 fun Route.likeParent(
         likeService: LikeService,
+        activityService: ActivityService
 ) {
     authenticate {
         post("/api/like") {
-            val request = call.receiveOrNull<LikeUpdateRequest>() ?: kotlin.run {
+            val request = call.receiveNullable<LikeUpdateRequest>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
 
-            val likeSuccessful = likeService.likeParent(call.userId, request.parentId)
+            val userId = call.userId
+            val likeSuccessful = likeService.likeParent(userId, request.parentId, request.parentType)
             if(likeSuccessful) {
-                call.respond(
-                        HttpStatusCode.OK,
-                        BasicApiResponse(
-                                successful = true
-                        )
+                activityService.addLikeActivity(
+                        byUserId = userId,
+                        parentType = ParentType.fromType(request.parentType),
+                        parentId = request.parentId
                 )
-            } else {
                 call.respond(
                         HttpStatusCode.OK,
                         BasicApiResponse(

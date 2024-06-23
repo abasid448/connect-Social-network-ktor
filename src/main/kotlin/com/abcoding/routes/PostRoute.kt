@@ -3,6 +3,7 @@ package com.abcoding.routes
 import com.abcoding.data.requests.CreatePostRequest
 import com.abcoding.data.requests.DeletePostRequest
 import com.abcoding.data.responses.BasicApiResponse
+import com.abcoding.service.CommentService
 import com.abcoding.service.LikeService
 import com.abcoding.service.PostService
 import com.abcoding.service.UserService
@@ -68,8 +69,8 @@ fun Route.getPostsForFollows(
 }
 fun Route.deletePost(
         postService: PostService,
-        likeService: LikeService
-) {
+        likeService: LikeService,
+        commentService: CommentService) {
     authenticate {
         delete("/api/post/delete") {
             val request = call.receiveNullable<DeletePostRequest>() ?: kotlin.run {
@@ -84,7 +85,7 @@ fun Route.deletePost(
             if(post.userId == call.userId) {
                 postService.deletePost(request.postId)
                 likeService.deleteLikesForParent(request.postId)
-                // TODO: Delete comments from post
+                commentService.deleteCommentsForPost(request.postId)
                 call.respond(HttpStatusCode.OK)
             } else {
                 call.respond(HttpStatusCode.Unauthorized)
