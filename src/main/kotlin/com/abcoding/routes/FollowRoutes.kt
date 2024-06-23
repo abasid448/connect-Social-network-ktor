@@ -1,7 +1,6 @@
 package com.abcoding.routes
 
 import com.abcoding.data.models.Activity
-import com.abcoding.data.repository.follow.FollowRepository
 import com.abcoding.data.requests.FollowUpdateRequest
 import com.abcoding.data.responses.BasicApiResponse
 import com.abcoding.data.util.ActivityType

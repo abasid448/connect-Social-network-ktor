@@ -6,14 +6,12 @@ import com.abcoding.data.responses.BasicApiResponse
 import com.abcoding.service.CommentService
 import com.abcoding.service.LikeService
 import com.abcoding.service.PostService
-import com.abcoding.service.UserService
 import com.abcoding.util.ApiResponseMessages
 import com.abcoding.util.Constants
 import com.abcoding.util.QueryParams
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*

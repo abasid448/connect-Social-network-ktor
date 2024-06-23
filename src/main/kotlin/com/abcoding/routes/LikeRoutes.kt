@@ -5,7 +5,6 @@ import com.abcoding.data.responses.BasicApiResponse
 import com.abcoding.data.util.ParentType
 import com.abcoding.service.ActivityService
 import com.abcoding.service.LikeService
-import com.abcoding.service.UserService
 import com.abcoding.util.ApiResponseMessages
 import io.ktor.http.*
 import io.ktor.server.application.*
