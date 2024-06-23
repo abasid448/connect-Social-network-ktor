@@ -1,5 +1,6 @@
 package com.abcoding.routes
 
+import com.abcoding.data.models.User
 import com.abcoding.data.requests.CreateAccountRequest
 import com.abcoding.data.requests.LoginRequest
 import com.abcoding.data.responses.AuthResponse
@@ -8,10 +9,12 @@ import com.abcoding.service.UserService
 import com.abcoding.util.ApiResponseMessages.FIELDS_BLANK
 import com.abcoding.util.ApiResponseMessages.INVALID_CREDENTIALS
 import com.abcoding.util.ApiResponseMessages.USER_ALREADY_EXISTS
+import com.abcoding.util.QueryParams
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -59,7 +62,7 @@ fun Route.loginUser(
         jwtSecret: String
 ) {
     post("/api/user/login") {
-        val request = call.receiveOrNull<LoginRequest>() ?: kotlin.run {
+        val request = call.receiveNullable<LoginRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
@@ -102,6 +105,25 @@ fun Route.loginUser(
                             successful = false,
                             message = INVALID_CREDENTIALS
                     )
+            )
+        }
+    }
+}
+fun Route.searchUser(userService: UserService) {
+    authenticate {
+        get("/api/user/search") {
+            val query = call.parameters[QueryParams.PARAM_QUERY]
+            if(query == null || query.isBlank()) {
+                call.respond(
+                        HttpStatusCode.OK,
+                        listOf<User>()
+                )
+                return@get
+            }
+            val searchResults = userService.searchForUsers(query, call.userId)
+            call.respond(
+                    HttpStatusCode.OK,
+                    searchResults
             )
         }
     }

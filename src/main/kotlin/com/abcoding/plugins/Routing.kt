@@ -36,6 +36,9 @@ fun Application.configureRouting() {
             jwtSecret = jwtSecret
         )
 
+        searchUser(userService)
+
+
         // Following routes
         followUser(followService,activityService)
         unfollowUser(followService)
