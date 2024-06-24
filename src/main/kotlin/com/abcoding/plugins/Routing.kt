@@ -4,6 +4,7 @@ package com.abcoding.plugins
 import com.abcoding.routes.*
 import com.abcoding.service.*
 import io.ktor.server.application.*
+import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
@@ -30,35 +31,41 @@ fun Application.configureRouting() {
         // User routes
         createUser(userService)
         loginUser(
-            userService = userService,
-            jwtIssuer = jwtIssuer,
-            jwtAudience = jwtAudience,
-            jwtSecret = jwtSecret
+                userService = userService,
+                jwtIssuer = jwtIssuer,
+                jwtAudience = jwtAudience,
+                jwtSecret = jwtSecret
         )
 
         searchUser(userService)
-
+        getUserProfile(userService)
+        getPostsForProfile(postService)
+        updateUserProfile(userService)
 
         // Following routes
-        followUser(followService,activityService)
+        followUser(followService, activityService)
         unfollowUser(followService)
 
         // Post routes
         createPost(postService)
         getPostsForFollows(postService)
-        deletePost(postService, likeService,commentService)
+        deletePost(postService, likeService, commentService)
 
         // Like routes
-        likeParent(likeService,activityService)
+        likeParent(likeService, activityService)
         unlikeParent(likeService)
 
         // Comment routes
-        createComment(commentService,activityService)
+        createComment(commentService, activityService)
         deleteComment(commentService, likeService)
         getCommentsForPost(commentService)
 
         // Activity routes
         getActivities(activityService)
+
+        static {
+            resources("static")
+        }
     }
 }
 
