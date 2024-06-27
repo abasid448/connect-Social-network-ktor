@@ -2,7 +2,6 @@ package com.abcoding.service
 
 import com.abcoding.data.models.Post
 import com.abcoding.data.repository.post.PostRepository
-import com.abcoding.data.requests.CreateAccountRequest
 import com.abcoding.data.requests.CreatePostRequest
 import com.abcoding.util.Constants
 
@@ -10,10 +9,10 @@ class PostService(
         private val repository: PostRepository
 ) {
 
-    suspend fun createPostIfUserExists(request: CreatePostRequest, userId: String): Boolean {
-        return repository.createPostIfUserExists(
+    suspend fun createPost(request: CreatePostRequest, userId: String, imageUrl:String): Boolean {
+        return repository.createPost(
                 Post(
-                        imageUrl = "",
+                        imageUrl = imageUrl ,
                         userId = userId,
                         timestamp = System.currentTimeMillis(),
                         description = request.description

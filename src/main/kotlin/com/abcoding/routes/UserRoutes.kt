@@ -205,6 +205,7 @@ fun Route.updateUserProfile(userService: UserService) {
                                     UpdateProfileRequest::class.java
                             )
                         }
+
                     }
                     is PartData.FileItem -> {
                         val fileBytes = partData.streamProvider().readBytes()
@@ -212,8 +213,8 @@ fun Route.updateUserProfile(userService: UserService) {
                         fileName = UUID.randomUUID().toString() + "." + fileExtension
                         File("$PROFILE_PICTURE_PATH$fileName").writeBytes(fileBytes)
                     }
-                    is PartData.BinaryItem -> Unit
-                    is PartData.BinaryChannelItem -> TODO()
+                        is PartData.BinaryItem -> Unit
+                    else -> Unit
                 }
             }
 
