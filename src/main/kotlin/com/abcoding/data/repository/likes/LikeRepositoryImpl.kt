@@ -15,13 +15,12 @@ class LikeRepositoryImpl(
     override suspend fun likeParent(userId: String, parentId: String, parentType: Int): Boolean {
         val doesUserExist = users.findOneById(userId) != null
         return if(doesUserExist) {
-            likes.insertOne(Like(userId, parentId, parentType))
+            likes.insertOne(Like(userId, parentId, parentType, timestamp = System.currentTimeMillis()))
             true
         } else {
             false
         }
     }
-
 
     override suspend fun unlikeParent(userId: String, parentId: String): Boolean {
         val doesUserExist = users.findOneById(userId) != null
@@ -40,5 +39,14 @@ class LikeRepositoryImpl(
 
     override suspend fun deleteLikesForParent(parentId: String) {
         likes.deleteMany(Like::parentId eq parentId)
+    }
+
+    override suspend fun getLikesForParent(parentId: String, page: Int, pageSize: Int): List<Like> {
+        return likes
+                .find(Like::parentId eq parentId)
+                .skip(page*pageSize)
+                .limit(pageSize)
+                .descendingSort(Like::timestamp)
+                .toList()
     }
 }
