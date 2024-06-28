@@ -38,7 +38,7 @@ fun Route.followUser(
                 )
                 call.respond(
                         HttpStatusCode.OK,
-                        BasicApiResponse(
+                        BasicApiResponse<Unit>(
                                 successful = false,
                                 message = USER_NOT_FOUND
                         )
@@ -59,14 +59,14 @@ fun Route.unfollowUser(followService: FollowService) {
         if(didUserExist) {
             call.respond(
                     HttpStatusCode.OK,
-                    BasicApiResponse(
+                    BasicApiResponse<Unit>(
                             successful = true
                     )
             )
         } else {
             call.respond(
                     HttpStatusCode.OK,
-                    BasicApiResponse(
+                    BasicApiResponse<Unit>(
                             successful = false,
                             message = USER_NOT_FOUND
                     )

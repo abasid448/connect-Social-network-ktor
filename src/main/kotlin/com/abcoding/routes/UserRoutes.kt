@@ -6,6 +6,7 @@ import com.abcoding.data.requests.LoginRequest
 import com.abcoding.data.requests.UpdateProfileRequest
 import com.abcoding.data.responses.AuthResponse
 import com.abcoding.data.responses.BasicApiResponse
+import com.abcoding.data.responses.UserResponseItem
 import com.abcoding.service.PostService
 import com.abcoding.service.UserService
 import com.abcoding.util.ApiResponseMessages
@@ -13,9 +14,11 @@ import com.abcoding.util.ApiResponseMessages.FIELDS_BLANK
 import com.abcoding.util.ApiResponseMessages.INVALID_CREDENTIALS
 import com.abcoding.util.ApiResponseMessages.USER_ALREADY_EXISTS
 import com.abcoding.util.Constants
+import com.abcoding.util.Constants.BANNER_IMAGE_PATH
 import com.abcoding.util.Constants.BASE_URL
 import com.abcoding.util.Constants.PROFILE_PICTURE_PATH
 import com.abcoding.util.QueryParams
+import com.abcoding.util.save
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.google.gson.Gson
@@ -30,97 +33,6 @@ import org.koin.ktor.ext.inject
 import java.io.File
 import java.util.*
 
-
-fun Route.createUser(userService: UserService) {
-    post("/api/user/create") {
-        val request = call.receiveNullable<CreateAccountRequest>() ?: kotlin.run {
-            call.respond(HttpStatusCode.BadRequest)
-            return@post
-        }
-        if (userService.doesUserWithEmailExist(request.email)) {
-            call.respond(
-                    BasicApiResponse(
-                            successful = false,
-                            message = USER_ALREADY_EXISTS
-                    )
-            )
-            return@post
-        }
-        when (userService.validateCreateAccountRequest(request)) {
-            is UserService.ValidationEvent.ErrorFieldEmpty -> {
-                call.respond(
-                        BasicApiResponse(
-                                successful = false,
-                                message = FIELDS_BLANK
-                        )
-                )
-            }
-
-            is UserService.ValidationEvent.Success -> {
-                userService.createUser(request)
-                call.respond(
-                        BasicApiResponse(successful = true)
-                )
-            }
-        }
-    }
-}
-
-fun Route.loginUser(
-        userService: UserService,
-        jwtIssuer: String,
-        jwtAudience: String,
-        jwtSecret: String
-) {
-    post("/api/user/login") {
-        val request = call.receiveNullable<LoginRequest>() ?: kotlin.run {
-            call.respond(HttpStatusCode.BadRequest)
-            return@post
-        }
-
-        if (request.email.isBlank() || request.password.isBlank()) {
-            call.respond(HttpStatusCode.BadRequest)
-            return@post
-        }
-
-        val user = userService.getUserByEmail(request.email) ?: kotlin.run {
-            call.respond(
-                    HttpStatusCode.OK,
-                    BasicApiResponse(
-                            successful = false,
-                            message = INVALID_CREDENTIALS
-                    )
-            )
-            return@post
-        }
-        val isCorrectPassword = userService.isValidPassword(
-                enteredPassword = request.password,
-                actualPassword = user.password
-        )
-        if (isCorrectPassword) {
-            val expiresIn = 1000L * 60L * 60L * 24L * 365L
-            val token = JWT.create()
-                    .withClaim("userId", user.id)
-                    .withIssuer(jwtIssuer)
-                    .withExpiresAt(Date(System.currentTimeMillis() + expiresIn))
-                    .withAudience(jwtAudience)
-                    .sign(Algorithm.HMAC256(jwtSecret))
-            call.respond(
-                    HttpStatusCode.OK,
-                    AuthResponse(token = token)
-            )
-        } else {
-            call.respond(
-                    HttpStatusCode.OK,
-                    BasicApiResponse(
-                            successful = false,
-                            message = INVALID_CREDENTIALS
-                    )
-            )
-        }
-    }
-}
-
 fun Route.searchUser(userService: UserService) {
     authenticate {
         get("/api/user/search") {
@@ -128,7 +40,7 @@ fun Route.searchUser(userService: UserService) {
             if (query == null || query.isBlank()) {
                 call.respond(
                         HttpStatusCode.OK,
-                        listOf<User>()
+                        listOf<UserResponseItem>()
                 )
                 return@get
             }
@@ -146,12 +58,13 @@ fun Route.getPostsForProfile(
 ) {
     authenticate {
         get("/api/user/posts") {
+            val userId = call.parameters[QueryParams.PARAM_USER_ID]
             val page = call.parameters[QueryParams.PARAM_PAGE]?.toIntOrNull() ?: 0
             val pageSize = call.parameters[QueryParams.PARAM_PAGE_SIZE]?.toIntOrNull()
                     ?: Constants.DEFAULT_POST_PAGE_SIZE
 
             val posts = postService.getPostsForProfile(
-                    userId = call.userId,
+                    userId = userId ?: call.userId,
                     page = page,
                     pageSize = pageSize
             )
@@ -174,7 +87,7 @@ fun Route.getUserProfile(userService: UserService) {
             val profileResponse = userService.getUserProfile(userId, call.userId)
             if (profileResponse == null) {
                 call.respond(
-                        HttpStatusCode.OK, BasicApiResponse(
+                        HttpStatusCode.OK, BasicApiResponse<Unit>(
                         successful = false,
                         message = ApiResponseMessages.USER_NOT_FOUND
                 )
@@ -183,7 +96,8 @@ fun Route.getUserProfile(userService: UserService) {
             }
             call.respond(
                     HttpStatusCode.OK,
-                    profileResponse
+                    BasicApiResponse(successful = true,
+                    data = profileResponse)
             )
         }
     }
@@ -195,7 +109,8 @@ fun Route.updateUserProfile(userService: UserService) {
         put("/api/user/update") {
             val multipart = call.receiveMultipart()
             var updateProfileRequest: UpdateProfileRequest? = null
-            var fileName: String? = null
+            var profilePictureFileName: String? = null
+            var bannerImageFileName: String? = null
             multipart.forEachPart { partData ->
                 when (partData) {
                     is PartData.FormItem -> {
@@ -205,41 +120,43 @@ fun Route.updateUserProfile(userService: UserService) {
                                     UpdateProfileRequest::class.java
                             )
                         }
-
                     }
                     is PartData.FileItem -> {
-                        val fileBytes = partData.streamProvider().readBytes()
-                        val fileExtension = partData.originalFileName?.takeLastWhile { it != '.' }
-                        fileName = UUID.randomUUID().toString() + "." + fileExtension
-                        File("$PROFILE_PICTURE_PATH$fileName").writeBytes(fileBytes)
+                        if (partData.name == "profile_picture") {
+                            profilePictureFileName = partData.save(PROFILE_PICTURE_PATH)
+                        } else if (partData.name == "banner_image") {
+                            bannerImageFileName = partData.save(BANNER_IMAGE_PATH)
+                        }
                     }
-                        is PartData.BinaryItem -> Unit
-                    else -> Unit
+                    else -> Unit // handle any other types if needed
                 }
+                partData.dispose()
             }
 
-            val profilePictureUrl = "${BASE_URL}profile_pictures/$fileName"
+            val profilePictureUrl = profilePictureFileName?.let { "${BASE_URL}profile_pictures/$it" }
+            val bannerImageUrl = bannerImageFileName?.let { "${BASE_URL}banner_images/$it" }
 
             updateProfileRequest?.let { request ->
                 val updateAcknowledged = userService.updateUser(
                         userId = call.userId,
                         profileImageUrl = profilePictureUrl,
+                        bannerUrl = bannerImageUrl,
                         updateProfileRequest = request
                 )
                 if (updateAcknowledged) {
                     call.respond(
                             HttpStatusCode.OK,
-                            BasicApiResponse(
+                            BasicApiResponse<Unit>(
                                     successful = true
                             )
                     )
                 } else {
-                    File("${PROFILE_PICTURE_PATH}/$fileName").delete()
+                    profilePictureFileName?.let { File("${PROFILE_PICTURE_PATH}/$it").delete() }
+                    bannerImageFileName?.let { File("${BANNER_IMAGE_PATH}/$it").delete() }
                     call.respond(HttpStatusCode.InternalServerError)
                 }
-            } ?: kotlin.run {
+            } ?: run {
                 call.respond(HttpStatusCode.BadRequest)
-                return@put
             }
         }
     }

@@ -4,6 +4,7 @@ package com.abcoding.plugins
 import com.abcoding.routes.*
 import com.abcoding.service.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -29,6 +30,7 @@ fun Application.configureRouting() {
 
     routing {
         // User routes
+        authenticate()
         createUser(userService)
         loginUser(
                 userService = userService,
