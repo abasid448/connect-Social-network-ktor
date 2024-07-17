@@ -4,6 +4,7 @@ import com.abcoding.data.models.Activity
 import com.abcoding.data.repository.activity.ActivityRepository
 import com.abcoding.data.repository.comment.CommentRepository
 import com.abcoding.data.repository.post.PostRepository
+import com.abcoding.data.responses.ActivityResponse
 import com.abcoding.data.util.ActivityType
 import com.abcoding.data.util.ParentType
 import com.abcoding.util.Constants
@@ -17,7 +18,7 @@ class ActivityService(
             userId: String,
             page: Int = 0,
             pageSize: Int = Constants.DEFAULT_ACTIVITY_PAGE_SIZE
-    ): List<Activity> {
+    ): List<ActivityResponse> {
         return activityRepository.getActivitiesForUser(userId, page, pageSize)
 
     }

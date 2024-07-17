@@ -4,7 +4,6 @@ package com.abcoding.plugins
 import com.abcoding.routes.*
 import com.abcoding.service.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -22,6 +21,8 @@ fun Application.configureRouting() {
     val commentService: CommentService by inject()
 
     val activityService: ActivityService by inject()
+
+    val skillService: SkillService by inject()
 
     val jwtIssuer = environment.config.property("jwt.domain").getString()
     val jwtAudience = environment.config.property("jwt.audience").getString()
@@ -52,6 +53,7 @@ fun Application.configureRouting() {
         createPost(postService)
         getPostsForFollows(postService)
         deletePost(postService, likeService, commentService)
+        getPostDetails(postService)
 
         // Like routes
         likeParent(likeService, activityService)
@@ -65,6 +67,9 @@ fun Application.configureRouting() {
 
         // Activity routes
         getActivities(activityService)
+
+        //Skill Routes
+        getSkills(skillService)
 
         static {
             resources("static")

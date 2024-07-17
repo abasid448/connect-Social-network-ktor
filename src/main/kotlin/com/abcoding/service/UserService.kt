@@ -9,8 +9,7 @@ import com.abcoding.data.responses.ProfileResponse
 import com.abcoding.data.responses.UserResponseItem
 
 class UserService(
-        private val userRepository: UserRepository,
-        private val followRepository: FollowRepository
+    private val userRepository: UserRepository, private val followRepository: FollowRepository
 ) {
 
     suspend fun doesUserWithEmailExist(email: String): Boolean {
@@ -20,24 +19,24 @@ class UserService(
     suspend fun getUserProfile(userId: String, callerUserId: String): ProfileResponse? {
         val user = userRepository.getUserById(userId) ?: return null
         return ProfileResponse(
-                userId = user.id,
-                username = user.username,
-                bio = user.bio,
-                followerCount = user.followerCount,
-                followingCount = user.followingCount,
-                postCount = user.postCount,
-                profilePictureUrl = user.profileImageUrl,
-                bannerUrl = user.bannerUrl,
-                topSkillUrls = user.skills,
-                gitHubUrl = user.gitHubUrl,
-                instagramUrl = user.instagramUrl,
-                linkedInUrl = user.linkedInUrl,
-                isOwnProfile = userId == callerUserId,
-                isFollowing = if (userId != callerUserId) {
-                    followRepository.doesUserFollow(callerUserId, userId)
-                } else {
-                    false
-                }
+            userId = user.id,
+            username = user.username,
+            bio = user.bio,
+            followerCount = user.followerCount,
+            followingCount = user.followingCount,
+            postCount = user.postCount,
+            profilePictureUrl = user.profileImageUrl,
+            bannerUrl = user.bannerUrl,
+            topSkills = user.skills,
+            gitHubUrl = user.gitHubUrl,
+            instagramUrl = user.instagramUrl,
+            linkedInUrl = user.linkedInUrl,
+            isOwnProfile = userId == callerUserId,
+            isFollowing = if (userId != callerUserId) {
+                followRepository.doesUserFollow(callerUserId, userId)
+            } else {
+                false
+            }
         )
     }
 
@@ -50,12 +49,9 @@ class UserService(
     }
 
     suspend fun updateUser(
-            userId: String,
-            profileImageUrl: String?,
-            bannerUrl: String?,
-            updateProfileRequest: UpdateProfileRequest
+        userId: String, profileImageUrl: String?, bannerUrl: String?, updateProfileRequest: UpdateProfileRequest
     ): Boolean {
-        return userRepository.updateUser(userId, profileImageUrl,bannerUrl, updateProfileRequest)
+        return userRepository.updateUser(userId, profileImageUrl, bannerUrl, updateProfileRequest)
     }
 
     suspend fun searchForUsers(query: String, userId: String): List<UserResponseItem> {
@@ -64,28 +60,28 @@ class UserService(
         return users.map { user ->
             val isFollowing = followsByUser.find { it.followedUserId == user.id } != null
             UserResponseItem(
-                    userId = user.id,
-                    username = user.username,
-                    profilePictureUrl = user.profileImageUrl,
-                    bio = user.bio,
-                    isFollowing = isFollowing
+                userId = user.id,
+                username = user.username,
+                profilePictureUrl = user.profileImageUrl,
+                bio = user.bio,
+                isFollowing = isFollowing
             )
-        }
+        }.filter { it.userId != userId }
     }
 
     suspend fun createUser(request: CreateAccountRequest) {
         userRepository.createUser(
-                User(
-                        email = request.email,
-                        username = request.username,
-                        password = request.password,
-                        profileImageUrl = "",
-                        bannerUrl = "",
-                        bio = "",
-                        gitHubUrl = null,
-                        instagramUrl = null,
-                        linkedInUrl = null
-                )
+            User(
+                email = request.email,
+                username = request.username,
+                password = request.password,
+                profileImageUrl = "",
+                bannerUrl = "",
+                bio = "",
+                gitHubUrl = null,
+                instagramUrl = null,
+                linkedInUrl = null
+            )
         )
     }
 

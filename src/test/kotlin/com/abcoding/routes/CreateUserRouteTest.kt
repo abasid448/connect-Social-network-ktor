@@ -1,29 +1,30 @@
 package com.abcoding.routes
 
-import com.abcoding.data.models.User
 import com.abcoding.data.repository.user.FakeUserRepository
-import com.abcoding.data.requests.CreateAccountRequest
-import com.abcoding.data.responses.BasicApiResponse
 import com.abcoding.di.testModule
-import com.abcoding.plugins.configureSerialization
-import com.abcoding.service.UserService
-import com.abcoding.util.ApiResponseMessages
-import com.google.common.truth.Truth.assertThat
 import com.google.gson.Gson
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
-import kotlinx.coroutines.runBlocking
-import org.junit.Test
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.test.KoinTest
 import org.koin.test.inject
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
+import kotlin.test.Test
+import com.abcoding.data.models.User
+import com.abcoding.data.requests.CreateAccountRequest
+import com.abcoding.data.responses.BasicApiResponse
+import com.abcoding.plugins.configureSerialization
+import com.abcoding.service.UserService
+import com.abcoding.util.ApiResponseMessages
+import com.google.common.truth.Truth.assertThat
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import kotlinx.coroutines.runBlocking
+
 
 
 internal class createUserRoutes : KoinTest {
@@ -50,12 +51,12 @@ internal class createUserRoutes : KoinTest {
         testApplication {
             application {
                 install(Routing){
-                    createUser(userService = UserService(userRepository))
+                    createUser(userService = userRepository)
                 }
             }
             val request= client.post("/api/user/create")
-                assertThat(request.status).isEqualTo(HttpStatusCode.BadRequest)
-            }
+            assertThat(request.status).isEqualTo(HttpStatusCode.BadRequest)
+        }
     }
 
     @Test
@@ -88,11 +89,11 @@ internal class createUserRoutes : KoinTest {
                 )
                 setBody(gson.toJson(request))
             }
-                val response = gson.fromJson(
-                    request.bodyAsText(), BasicApiResponse::class.java
-                )
-                assertThat(response.successful).isFalse()
-                assertThat(response.message).isEqualTo(ApiResponseMessages.USER_ALREADY_EXISTS)
+            val response = gson.fromJson(
+                request.bodyAsText(), BasicApiResponse::class.java
+            )
+            assertThat(response.successful).isFalse()
+            assertThat(response.message).isEqualTo(ApiResponseMessages.USER_ALREADY_EXISTS)
         }
     }
     @Test
@@ -114,11 +115,11 @@ internal class createUserRoutes : KoinTest {
                 )
                 setBody(gson.toJson(request))
             }
-                val response = gson.fromJson(
-                    request.bodyAsText(), BasicApiResponse::class.java
-                )
-                assertThat(response.successful).isFalse()
-                assertThat(response.message).isEqualTo(ApiResponseMessages.FIELDS_BLANK)
+            val response = gson.fromJson(
+                request.bodyAsText(), BasicApiResponse::class.java
+            )
+            assertThat(response.successful).isFalse()
+            assertThat(response.message).isEqualTo(ApiResponseMessages.FIELDS_BLANK)
         }
     }
 
@@ -143,8 +144,8 @@ internal class createUserRoutes : KoinTest {
                 setBody(gson.toJson(request))
             }
             val response = gson.fromJson(
-            request.bodyAsText(), BasicApiResponse::class.java
-        )
+                request.bodyAsText(), BasicApiResponse::class.java
+            )
             assertThat(response.successful).isTrue()
 
             runBlocking {

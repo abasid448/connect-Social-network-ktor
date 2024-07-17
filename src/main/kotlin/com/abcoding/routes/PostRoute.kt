@@ -76,7 +76,26 @@ fun Route.createPost(
         }
     }
 }
+fun Route.getPostsForProfile(postService: PostService){
+    authenticate {
+        get("/api/user/posts") {
+            val userId = call.parameters[QueryParams.PARAM_USER_ID]
+            val page = call.parameters[QueryParams.PARAM_PAGE]?.toIntOrNull() ?: 0
+            val pageSize =
+                call.parameters[QueryParams.PARAM_PAGE_SIZE]?.toIntOrNull() ?: Constants.DEFAULT_POST_PAGE_SIZE
 
+            val posts = postService.getPostsForProfile(
+                userId = userId ?: call.userId,
+                page = page,
+                pageSize = pageSize
+            )
+            call.respond(
+                HttpStatusCode.OK,
+                posts
+            )
+        }
+    }
+}
 fun Route.getPostsForFollows(
         postService: PostService,
 ) {
@@ -119,6 +138,27 @@ fun Route.deletePost(
             } else {
                 call.respond(HttpStatusCode.Unauthorized)
             }
+        }
+    }
+}
+fun Route.getPostDetails(postService: PostService) {
+    authenticate {
+        get("/api/post/details") {
+            val postId = call.parameters["postId"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            val post = postService.getPost(postId) ?: kotlin.run {
+                call.respond(HttpStatusCode.NotFound)
+                return@get
+            }
+            call.respond(
+                HttpStatusCode.OK,
+                BasicApiResponse(
+                    successful = true,
+                    data = post
+                )
+            )
         }
     }
 }
