@@ -15,8 +15,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.likeParent(
-        likeService: LikeService,
-        activityService: ActivityService
+    likeService: LikeService,
+    activityService: ActivityService
 ) {
     authenticate {
         post("/api/like") {
@@ -27,54 +27,60 @@ fun Route.likeParent(
 
             val userId = call.userId
             val likeSuccessful = likeService.likeParent(userId, request.parentId, request.parentType)
-            if(likeSuccessful) {
+            if (likeSuccessful) {
                 activityService.addLikeActivity(
-                        byUserId = userId,
-                        parentType = ParentType.fromType(request.parentType),
-                        parentId = request.parentId
+                    byUserId = userId,
+                    parentType = ParentType.fromType(request.parentType),
+                    parentId = request.parentId
                 )
                 call.respond(
-                        HttpStatusCode.OK,
-                        BasicApiResponse<Unit>(
-                                successful = false,
-                                message = ApiResponseMessages.USER_NOT_FOUND
-                        )
-                )
-            }
-        }
-    }
-}
-fun Route.unlikeParent(
-        likeService: LikeService,
-) {
-    authenticate {
-        delete("/api/unlike") {
-            val request = call.receiveNullable<LikeUpdateRequest>() ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@delete
-            }
-            val unlikeSuccessful = likeService.unlikeParent(call.userId, request.parentId, request.parentType)
-            if(unlikeSuccessful) {
-                call.respond(
-                        HttpStatusCode.OK,
-                        BasicApiResponse<Unit>(
-                                successful = true
-                        )
-                )
-            } else {
-                call.respond(
-                        HttpStatusCode.OK,
-                        BasicApiResponse<Unit>(
-                                successful = false,
-                                message = ApiResponseMessages.USER_NOT_FOUND
-                        )
+                    HttpStatusCode.OK,
+                    BasicApiResponse<Unit>(
+                        successful = false,
+                        message = ApiResponseMessages.USER_NOT_FOUND
+                    )
                 )
             }
         }
     }
 }
 
-fun Route.getLikesForParent(likeService: LikeService){
+fun Route.unlikeParent(
+    likeService: LikeService,
+) {
+    authenticate {
+        delete("/api/unlike") {
+            val parentId = call.parameters[QueryParams.PARAM_PARENT_ID] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@delete
+            }
+            val parentType = call.parameters[QueryParams.PARAM_PARENT_TYPE]?.toIntOrNull() ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@delete
+            }
+
+            val unlikeSuccessful = likeService.unlikeParent(call.userId, parentId, parentType)
+            if (unlikeSuccessful) {
+                call.respond(
+                    HttpStatusCode.OK,
+                    BasicApiResponse<Unit>(
+                        successful = true
+                    )
+                )
+            } else {
+                call.respond(
+                    HttpStatusCode.OK,
+                    BasicApiResponse<Unit>(
+                        successful = false,
+                        message = ApiResponseMessages.USER_NOT_FOUND
+                    )
+                )
+            }
+        }
+    }
+}
+
+fun Route.getLikesForParent(likeService: LikeService) {
 
     authenticate {
         get("/api/like/parent") {
@@ -84,15 +90,17 @@ fun Route.getLikesForParent(likeService: LikeService){
                 return@get
             }
             val usersWhoLikedParent = likeService.getUsersWhoLikedParent(
-                    parentId = parentId,
-                    call.userId
+                parentId = parentId,
+                call.userId
             )
-            call.respond(HttpStatusCode.OK,
-            usersWhoLikedParent)
+            call.respond(
+                HttpStatusCode.OK,
+                usersWhoLikedParent
+            )
         }
 
 
-        }
+    }
 
 }
 

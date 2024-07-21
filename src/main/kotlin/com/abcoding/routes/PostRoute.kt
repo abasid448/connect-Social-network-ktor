@@ -21,7 +21,7 @@ import org.koin.ktor.ext.inject
 import java.io.File
 
 fun Route.createPost(
-        postService: PostService,
+    postService: PostService,
 ) {
     val gson by inject<Gson>()
     authenticate {
@@ -34,17 +34,19 @@ fun Route.createPost(
                     is PartData.FormItem -> {
                         if (partData.name == "post_data") {
                             createPostRequest = gson.fromJson(
-                                    partData.value,
-                                    CreatePostRequest::class.java
+                                partData.value,
+                                CreatePostRequest::class.java
                             )
                         }
                     }
+
                     is PartData.FileItem -> {
                         val fileBytes = partData.streamProvider().readBytes()
                         val file = File(Constants.POST_PICTURE_PATH, partData.originalFileName!!)
                         file.writeBytes(fileBytes)
                         fileName = file.name
                     }
+
                     is PartData.BinaryItem -> Unit
                     is PartData.BinaryChannelItem -> TODO()
                 }
@@ -54,16 +56,16 @@ fun Route.createPost(
 
             createPostRequest?.let { request ->
                 val createPostAcknowledged = postService.createPost(
-                        request = request,
-                        userId = call.userId,
-                        imageUrl = postPictureUrl
+                    request = request,
+                    userId = call.userId,
+                    imageUrl = postPictureUrl
                 )
                 if (createPostAcknowledged) {
                     call.respond(
-                            HttpStatusCode.OK,
-                            BasicApiResponse<Unit>(
-                                    successful = true
-                            )
+                        HttpStatusCode.OK,
+                        BasicApiResponse<Unit>(
+                            successful = true
+                        )
                     )
                 } else {
                     File("${Constants.POST_PICTURE_PATH}/$fileName").delete()
@@ -76,15 +78,17 @@ fun Route.createPost(
         }
     }
 }
-fun Route.getPostsForProfile(postService: PostService){
+
+fun Route.getPostsForProfile(postService: PostService) {
     authenticate {
         get("/api/user/posts") {
             val userId = call.parameters[QueryParams.PARAM_USER_ID]
             val page = call.parameters[QueryParams.PARAM_PAGE]?.toIntOrNull() ?: 0
             val pageSize =
-                call.parameters[QueryParams.PARAM_PAGE_SIZE]?.toIntOrNull() ?: Constants.DEFAULT_POST_PAGE_SIZE
+                call.parameters[QueryParams.PARAM_PAGE_SIZE]?.toIntOrNull() ?: Constants.DEFAULT_PAGE_SIZE
 
             val posts = postService.getPostsForProfile(
+                ownUserId = call.userId,
                 userId = userId ?: call.userId,
                 page = page,
                 pageSize = pageSize
@@ -96,28 +100,29 @@ fun Route.getPostsForProfile(postService: PostService){
         }
     }
 }
+
 fun Route.getPostsForFollows(
-        postService: PostService,
+    postService: PostService,
 ) {
     authenticate {
         get("/api/post/get") {
             val page = call.parameters[QueryParams.PARAM_PAGE]?.toIntOrNull() ?: 0
             val pageSize =
-                    call.parameters[QueryParams.PARAM_PAGE_SIZE]?.toIntOrNull() ?: Constants.DEFAULT_POST_PAGE_SIZE
+                call.parameters[QueryParams.PARAM_PAGE_SIZE]?.toIntOrNull() ?: Constants.DEFAULT_PAGE_SIZE
 
             val posts = postService.getPostsForFollows(call.userId, page, pageSize)
             call.respond(
-                    HttpStatusCode.OK,
-                    posts
+                HttpStatusCode.OK,
+                posts
             )
         }
     }
 }
 
 fun Route.deletePost(
-        postService: PostService,
-        likeService: LikeService,
-        commentService: CommentService
+    postService: PostService,
+    likeService: LikeService,
+    commentService: CommentService
 ) {
     authenticate {
         delete("/api/post/delete") {
@@ -141,24 +146,24 @@ fun Route.deletePost(
         }
     }
 }
+
 fun Route.getPostDetails(postService: PostService) {
-    authenticate {
-        get("/api/post/details") {
-            val postId = call.parameters["postId"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@get
-            }
-            val post = postService.getPost(postId) ?: kotlin.run {
-                call.respond(HttpStatusCode.NotFound)
-                return@get
-            }
-            call.respond(
-                HttpStatusCode.OK,
-                BasicApiResponse(
-                    successful = true,
-                    data = post
-                )
-            )
+
+    get("/api/post/details") {
+        val postId = call.parameters["postId"] ?: kotlin.run {
+            call.respond(HttpStatusCode.BadRequest)
+            return@get
         }
+        val post = postService.getPostDetails(call.userId, postId) ?: kotlin.run {
+            call.respond(HttpStatusCode.NotFound)
+            return@get
+        }
+        call.respond(
+            HttpStatusCode.OK,
+            BasicApiResponse(
+                successful = true,
+                data = post
+            )
+        )
     }
 }

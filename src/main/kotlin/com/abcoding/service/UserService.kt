@@ -7,6 +7,7 @@ import com.abcoding.data.requests.CreateAccountRequest
 import com.abcoding.data.requests.UpdateProfileRequest
 import com.abcoding.data.responses.ProfileResponse
 import com.abcoding.data.responses.UserResponseItem
+import com.abcoding.util.Constants
 
 class UserService(
     private val userRepository: UserRepository, private val followRepository: FollowRepository
@@ -75,8 +76,8 @@ class UserService(
                 email = request.email,
                 username = request.username,
                 password = request.password,
-                profileImageUrl = "",
-                bannerUrl = "",
+                profileImageUrl = Constants.DEFAULT_PROFILE_PICTURE_PATH,
+                bannerUrl = Constants.DEFAULT_PROFILE_PICTURE_PATH,
                 bio = "",
                 gitHubUrl = null,
                 instagramUrl = null,

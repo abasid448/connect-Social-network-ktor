@@ -2,20 +2,26 @@ package com.abcoding.data.repository.comment
 
 import com.abcoding.data.models.Comment
 import com.abcoding.data.models.Like
+import com.abcoding.data.models.Post
 import com.abcoding.data.responses.CommentResponse
 import org.litote.kmongo.and
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
+import org.litote.kmongo.setValue
 
 class CommentRepositoryImpl(
     db: CoroutineDatabase
 ) : CommentRepository {
-
+    private val posts = db.getCollection<Post>()
     private val comments = db.getCollection<Comment>()
     private val likes = db.getCollection<Like>()
 
     override suspend fun createComment(comment: Comment): String {
         comments.insertOne(comment)
+        val oldCommentCount = posts.findOneById(comment.id)?.commentCount ?: 0
+        posts.updateOneById(comment.postId, setValue(
+            Post::commentCount,oldCommentCount +1
+        ))
         return comment.id
     }
 
@@ -31,8 +37,7 @@ class CommentRepositoryImpl(
     }
 
     override suspend fun getCommentsForPost(postId: String, ownUserId: String): List<CommentResponse> {
-        return comments.find(Comment::postId eq postId).toList().map {
-            comment ->
+        return comments.find(Comment::postId eq postId).toList().map { comment ->
             val isLiked = likes.findOne(
                 and(
                     Like::userId eq ownUserId,

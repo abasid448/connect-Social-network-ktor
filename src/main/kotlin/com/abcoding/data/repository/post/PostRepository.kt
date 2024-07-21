@@ -1,6 +1,7 @@
 package com.abcoding.data.repository.post
 
 import com.abcoding.data.models.Post
+import com.abcoding.data.responses.PostResponse
 import com.abcoding.util.Constants
 
 interface PostRepository {
@@ -9,16 +10,19 @@ interface PostRepository {
     suspend fun deletePost(postId: String)
 
     suspend fun getPostsByFollows(
-        userId: String,
-        page: Int = 0 ,
+        ownUserId: String,
+        page: Int = 0,
         pageSize: Int = Constants.DEFAULT_PAGE_SIZE
-    ): List<Post>
+    ): List<PostResponse>
 
     suspend fun getPostsForProfile(
-            userId: String,
-            page: Int = 0,
-            pageSize: Int = Constants.DEFAULT_POST_PAGE_SIZE
-    ): List<Post>
+        ownUserId: String,
+        userId: String,
+        page: Int = 0,
+        pageSize: Int = Constants.DEFAULT_PAGE_SIZE
+    ): List<PostResponse>
 
     suspend fun getPost(postId: String): Post?
+
+    suspend fun getPostDetails(userId: String, postId: String): PostResponse?
 }

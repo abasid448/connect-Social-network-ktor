@@ -2,6 +2,8 @@ package com.abcoding.di
 
 import com.abcoding.data.repository.activity.ActivityRepository
 import com.abcoding.data.repository.activity.ActivityRepositoryImpl
+import com.abcoding.data.repository.chat.ChatRepository
+import com.abcoding.data.repository.chat.ChatRepositoryImpl
 import com.abcoding.data.repository.comment.CommentRepository
 import com.abcoding.data.repository.comment.CommentRepositoryImpl
 import com.abcoding.data.repository.follow.FollowRepository
@@ -49,6 +51,9 @@ val mainModule = module {
     single<SkillRepository> {
         SkillRepositoryImpl(get())
     }
+    single<ChatRepository> {
+        ChatRepositoryImpl(get())
+    }
 
 
 
@@ -59,5 +64,6 @@ val mainModule = module {
     single { CommentService(get(), get()) }
     single { ActivityService(get(), get(), get()) }
     single { SkillService(get()) }
+    single { ChatService(get()) }
     single { Gson() }
 }
