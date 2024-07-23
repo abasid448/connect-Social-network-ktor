@@ -4,9 +4,9 @@ import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId
 
 data class Chat(
-    val users : List<SimpleUser>,
-    val lastMessage : Message,
-    val timeStamp:Long,
+    val userIds: List<String>,
+    val lastMessageId: String,
+    val timestamp: Long,
     @BsonId
-    val id:String = ObjectId().toString()
+    val id: String = ObjectId().toString(),
 )

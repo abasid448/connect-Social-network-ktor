@@ -3,6 +3,7 @@ package com.abcoding.plugins
 
 import com.abcoding.routes.*
 import com.abcoding.service.*
+import com.abcoding.service.chat.ChatController
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
@@ -25,6 +26,8 @@ fun Application.configureRouting() {
     val skillService: SkillService by inject()
 
     val chatService: ChatService by inject()
+
+    val chatController: ChatController by inject()
 
     val jwtIssuer = environment.config.property("jwt.domain").getString()
     val jwtAudience = environment.config.property("jwt.audience").getString()
@@ -76,8 +79,7 @@ fun Application.configureRouting() {
         // Chat routes
         getChatsForUser(chatService)
         getMessagesForChat(chatService)
-        chatWebSocket(chatService)
-
+        chatWebSocket(chatController)
         static {
             resources("static")
         }
