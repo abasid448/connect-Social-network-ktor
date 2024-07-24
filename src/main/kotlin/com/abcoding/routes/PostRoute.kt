@@ -126,19 +126,19 @@ fun Route.deletePost(
 ) {
     authenticate {
         delete("/api/post/delete") {
-            val request = call.receiveNullable<DeletePostRequest>() ?: kotlin.run {
+            val postId = call.parameters["postId"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@delete
             }
-            val post = postService.getPost(request.postId)
+            val post = postService.getPost(postId)
             if (post == null) {
                 call.respond(HttpStatusCode.NotFound)
                 return@delete
             }
             if (post.userId == call.userId) {
-                postService.deletePost(request.postId)
-                likeService.deleteLikesForParent(request.postId)
-                commentService.deleteCommentsForPost(request.postId)
+                postService.deletePost(postId)
+                likeService.deleteLikesForParent(postId)
+                commentService.deleteCommentsForPost(postId)
                 call.respond(HttpStatusCode.OK)
             } else {
                 call.respond(HttpStatusCode.Unauthorized)

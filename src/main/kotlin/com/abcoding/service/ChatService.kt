@@ -3,6 +3,7 @@ package com.abcoding.service
 import com.abcoding.data.models.Chat
 import com.abcoding.data.models.Message
 import com.abcoding.data.repository.chat.ChatRepository
+import com.abcoding.data.responses.ChatDto
 
 class ChatService(
     private val chatRepository: ChatRepository
@@ -15,7 +16,7 @@ class ChatService(
         return chatRepository.getMessageForChat(chatId, page, pageSize)
     }
 
-    suspend fun getChatsForUser(ownUserId: String): List<Chat> {
+    suspend fun getChatsForUser(ownUserId: String): List<ChatDto> {
         return chatRepository.getChatsForUser(ownUserId)
     }
 }
